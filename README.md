@@ -1,1 +1,1 @@
-# nim-game
+# my-project

@@ -1,4 +1,7 @@
-main :: IO()
+module Main where
+
+import Lib
+
 main = do
        print "----- Starting the game -----"
        putStrLn "Select the dificulty: "
