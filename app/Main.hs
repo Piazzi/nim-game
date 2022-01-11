@@ -32,41 +32,57 @@ updateBoard board row rowArtifacts = [if rowIndex == row then artifacts - rowArt
 
 -- Get the player move via input
 getPlayerMove :: String -> IO Int
-getPlayerMove move = do putStr move
-                        playerInput <- getChar
-                        if isDigit playerInput then
-                         do return (digitToInt playerInput)
-                        else 
-                         do putStrLn "Invalid input, insert a valid number!"
-                            getPlayerMove move
+getPlayerMove move = do
+  putStr move
+  playerInput <- getChar
+  if isDigit playerInput
+    then do return (digitToInt playerInput)
+    else do
+      putStrLn "Invalid input, insert a valid number!"
+      getPlayerMove move
 
-
--- main function of the game
-main = do
-  print "----- Starting the game -----"
+-- check player dificulty
+getDificulty :: String -> IO Int
+getDificulty dificulty = do
+  putStr dificulty
   putStrLn "Select the dificulty: "
   putStrLn "[1] --> Easy Mode"
   putStrLn "[2] --> Hard Mode"
-  dificulty <- getLine
-  putStrLn "You selected: "
-  print dificulty
-  putStrLn "The game is starting, good luck! \n"
-  boardDivider
-  printBoard board
-  boardDivider
-  do  
-      if gameFinished board
-        then do
-          putStr "Player "
-          putStr (show (next player))
-          putStrLn " wins!"
-        else do
-          putStr "Player "
-          putStrLn (show player)
-          row <- getDigit "Enter row number: "
-          stars <- getDigit "Enter stars to remove: "
-          if checkValidMove board row stars
-            then playnim (generateNewBoard board row stars) (next player)
-            else do
-              putStrLn "Invalid move"
-              playnim board player
+  playerInput <- getChar
+  if isDigit playerInput
+    then do
+      putStrLn "You selected: "
+      print playerInput
+      putStrLn "The game is starting, good luck! \n"
+      return (digitToInt playerInput)
+    else do
+      putStrLn "Invalid dificulty, insert a valid dificulty: \n [1] - For Easy Mode \n [2] - For Hard Mode "
+      getDificulty dificulty
+
+-- Get wheter is the player turn or the computer
+getTurn :: [Int]
+getTurn = if dificulty == 1 then else return 2
+
+-- main function of the game
+main :: [Int] -> Int -> IO ()
+main board player = do
+  getDificulty "----- Starting the game -----"
+  do
+    boardDivider
+    printBoard board
+    boardDivider
+    if gameFinished board
+      then do
+        putStr "Player "
+        putStr (show (next player))
+        putStrLn " wins!"
+      else do
+        putStr "Player "
+        print player
+        row <- getPlayerMove "Enter the row number you want to select: "
+        artifacts <- getPlayerMove "Enter the number of artifacts you want to remove: "
+        if checkPlayerMove board row artifacts
+          then main (updateBoard board row artifacts) (next player)
+          else do
+            putStrLn "Invalid move, insert a valid move!"
+            main board player
