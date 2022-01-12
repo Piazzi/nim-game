@@ -17,14 +17,14 @@ printBoard board = putStr $ unlines [replicate artifacts '|' | (artifacts, row) 
 boardDivider :: IO ()
 boardDivider = putStrLn "\n ---------- Board ------------ \n "
 
--- Verify if the game have a winner by checking wheter all elements in a list equals to 0
+-- Verify if the game have a winner by checking wheter all elements in the board equals to 0
 -- meaning that every artifact were removed.
 gameFinished :: [Int] -> Bool
 gameFinished = all (== 0)
 
 -- Verify whether a plater move is valid or not
 checkPlayerMove :: [Int] -> Int -> Int -> Bool
-checkPlayerMove board row artifacts = (board !! (row - 1)) >= artifacts
+checkPlayerMove board row artifacts = board !! (row - 1) >= artifacts
 
 -- Update the board once a move is made by the player or computer
 updateBoard :: [Int] -> Int -> Int -> [Int]
@@ -36,7 +36,7 @@ getPlayerMove move = do
   putStr move
   playerInput <- getChar
   if isDigit playerInput
-    then do return (digitToInt playerInput)
+    then return (digitToInt playerInput)
     else do
       putStrLn "Invalid input, insert a valid number!"
       getPlayerMove move
@@ -60,12 +60,14 @@ getDificulty dificulty = do
       getDificulty dificulty
 
 -- Get wheter is the player turn or the computer
-getTurn :: [Int]
-getTurn = if dificulty == 1 then else return 2
+nextTurn :: Int -> Int
+nextTurn player = if player == 0 then 1 else 2 -- = computer
+
 
 -- main function of the game
 main :: [Int] -> Int -> IO ()
-main board player = do
+main board player = 
+ do
   getDificulty "----- Starting the game -----"
   do
     boardDivider
@@ -74,7 +76,7 @@ main board player = do
     if gameFinished board
       then do
         putStr "Player "
-        putStr (show (next player))
+        putStr (show (nextTurn player))
         putStrLn " wins!"
       else do
         putStr "Player "
@@ -82,7 +84,10 @@ main board player = do
         row <- getPlayerMove "Enter the row number you want to select: "
         artifacts <- getPlayerMove "Enter the number of artifacts you want to remove: "
         if checkPlayerMove board row artifacts
-          then main (updateBoard board row artifacts) (next player)
+          then main (updateBoard board row artifacts) (nextTurn player)
           else do
             putStrLn "Invalid move, insert a valid move!"
             main board player
+
+nim :: IO ()
+nim = main board 1
