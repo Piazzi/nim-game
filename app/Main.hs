@@ -60,8 +60,10 @@ getDificulty dificulty = do
       getDificulty dificulty
 
 -- Get wheter is the player turn or the computer
+-- player = 0--> computer turn
+-- player = 1 --> player turn
 nextTurn :: Int -> Int
-nextTurn player = if player == 0 then 1 else 2 -- = computer
+nextTurn player = if player == 0 then 1 else 0 
 
 
 -- main function of the game
