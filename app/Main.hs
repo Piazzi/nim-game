@@ -72,7 +72,14 @@ getPlayerMove move = do
 -- Get the computer move based on the difficulty selected
 getComputerMove :: [Int] -> Int -> [Int]
 getComputerMove board difficulty = do
-  if difficulty == 1 then makeRandomMove board difficulty else makeOptimalMove board difficulty
+  if difficulty == 1 then makeRandomMove board  else makeOptimalMove board 
+
+ -- Return a random move for the easy mode
+makeRandomMove ::[Int] -> [Int]
+
+-- Return optimal move for the hard mode
+makeOptimalMove ::[Int] -> [Int]
+
 
 -- Verify whether a plater move is valid or not
 checkPlayerMove :: [Int] -> Int -> Int -> Bool
@@ -100,12 +107,6 @@ getdifficulty  = do
     else do
       putStrLn "Invalid difficulty, insert a valid difficulty: \n [1] - For Easy Mode \n [2] - For Hard Mode "
       getdifficulty
-
--- Return a random move for the easy mode
-makeRandomMove ::[Int] -> Int -> [Int]
-
--- Return optimal move for the hard mode
-makeOptimalMove ::[Int] -> Int -> [Int]
 
 -- Get wheter is the player turn or the computer
 -- player = 0 --> computer turn
