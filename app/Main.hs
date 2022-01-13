@@ -1,20 +1,17 @@
 -- Alunos: Lucas Piazzi de Castro (201635003) e Cristiano Nascimento (201635029) 
 
-{-# LANGUAGE BlockArguments #-}
-
-module Main where
 import Data.Char
-import Lib
 
 nimGame :: IO ()
 nimGame = do 
-  let dificulty = getDificulty 
-  let isPlayerGoingFirst = (if dificulty == 1 then 1 else 0)
-  main board isPlayerGoingFirst dificulty
+  -- transform IO Int to Int
+  selectedDifficulty <- getdifficulty 
+  let isPlayerGoingFirst = (if selectedDifficulty == 1 then 1 else 0)
+  main board isPlayerGoingFirst selectedDifficulty
 
 -- main function of the game
 main :: [Int] -> Int -> Int -> IO ()
-main board player dificulty =
+main board player difficulty =
   do
     boardDivider
     printBoard board
@@ -33,24 +30,24 @@ main board player dificulty =
         row <- getPlayerMove "Enter the row number you want to select: "
         artifacts <- getPlayerMove "Enter the number of artifacts you want to remove: "
         putStr "Move made!"
+        if checkPlayerMove board row artifacts
+          then main (updateBoard board row artifacts) (nextTurn player) difficulty
+          else do
+          putStrLn "Invalid move, insert a valid move!"
+          main board player difficulty
         -- computer turn
         else do
-          -- Head is the selected row to remove, and the tail is how many
-          -- artifacts will be removed
-          let rowAndArtifacts [] = getComputerMove board dificulty
-          main (updateBoard board (head rowAndArtifacts) (rowAndArtifacts !! 1) ) (nextTurn player) dificulty
-        if checkPlayerMove board row artifacts
-          then main (updateBoard board row artifacts) (nextTurn player) dificulty
-          else do
-            putStrLn "Invalid move, insert a valid move!"
-            main board player dificulty
+          -- Head is the selected row to remove, and the tail is how many artifacts will be removed
+          let rowAndArtifacts = getComputerMove board difficulty
+          main (updateBoard board (head rowAndArtifacts) (rowAndArtifacts !! 1)) (nextTurn player) difficulty
+        
 
 -- each index represents a line of the board, the value in each
 -- index represents the number of artifacts in the current board.
 board :: [Int]
 board = [1, 3, 5, 7]
 
--- print the current state of the board
+-- print the current state of the board, number of artifacts in each row
 printBoard :: [Int] -> IO ()
 printBoard board = putStr $ unlines [replicate artifacts '|' | (artifacts, row) <- zip board [1 .. length board]]
 
@@ -73,15 +70,9 @@ getPlayerMove move = do
       getPlayerMove move
 
 -- Get the computer move based on the difficulty selected
-getComputerMove :: [Int] -> [Int]
-getComputerMove dificulty = do
-  if dificulty == 1 then makeRandomMove board else makeOptimalMove board
-
--- Return a random move for the easy mode
-makeRandomMove ::[Int] -> [Int]
-
--- Return optimal move for the hard mode
-makeOptimalMove ::[Int] -> [Int]
+getComputerMove :: [Int] -> Int -> [Int]
+getComputerMove board difficulty = do
+  if difficulty == 1 then makeRandomMove board difficulty else makeOptimalMove board difficulty
 
 -- Verify whether a plater move is valid or not
 checkPlayerMove :: [Int] -> Int -> Int -> Bool
@@ -92,11 +83,11 @@ checkPlayerMove board row artifacts = board !! (row - 1) >= artifacts
 gameFinished :: [Int] -> Bool
 gameFinished = all (== 0)
 
--- check player dificulty
-getDificulty :: IO Int
-getDificulty  = do
+-- check player difficulty
+getdifficulty :: IO Int
+getdifficulty  = do
   putStrLn "----- Starting the game -----"
-  putStrLn "Select the dificulty: "
+  putStrLn "Select the difficulty: "
   putStrLn "[1] --> Easy Mode"
   putStrLn "[2] --> Hard Mode"
   playerInput <- getChar
@@ -107,8 +98,14 @@ getDificulty  = do
       putStrLn "The game is starting, good luck! \n"
       return (digitToInt playerInput)
     else do
-      putStrLn "Invalid dificulty, insert a valid dificulty: \n [1] - For Easy Mode \n [2] - For Hard Mode "
-      getDificulty
+      putStrLn "Invalid difficulty, insert a valid difficulty: \n [1] - For Easy Mode \n [2] - For Hard Mode "
+      getdifficulty
+
+-- Return a random move for the easy mode
+makeRandomMove ::[Int] -> Int -> [Int]
+
+-- Return optimal move for the hard mode
+makeOptimalMove ::[Int] -> Int -> [Int]
 
 -- Get wheter is the player turn or the computer
 -- player = 0 --> computer turn
