@@ -76,14 +76,15 @@ getComputerMove board difficulty = do
 
  -- Return a random move for the easy mode
 makeRandomMove :: [Int] -> [Int]
-makeRandomMove board = do
-  let randomSelectedRow = getRandomR (0, 3)
-  -- if the row is empty, call choose again
-  if (board!!randomSelectedRow) == 0 then do
-    makeRandomMove board
-  else do
-    let randowSelectedArtifacts = getRandomR (1, board!!randomSelectedRow)
-    return [randomSelectedRow, randowSelectedArtifacts]
+makeRandomMove board = do 
+      g <- newStdGen
+      let randomSelectedRow = getRandomR(0, 3) g
+  -- if the row is empty, call the function again
+      if (board !! randomSelectedRow) == 0 then 
+        makeRandomMove board
+      else do
+        let randowSelectedArtifacts = getRandomR(1, board !! randomSelectedRow)
+        randomSelectedRow : randowSelectedArtifacts : []
 
 -- Return optimal move for the hard mode
 --makeOptimalMove ::[Int] -> [Int]
