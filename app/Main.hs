@@ -103,7 +103,8 @@ checkPlayerMove board row artifacts = board !! (row - 1) >= artifacts
 -- Verify if the game have a winner by checking wheter all elements in the board equals to 0
 -- meaning that every artifact were removed.
 gameFinished :: [Int] -> Bool
-gameFinished = all (== 0)
+gameFinished board = 
+   if all (== 0) board then True else False
 
 -- check player difficulty
 getDifficulty :: IO Int
