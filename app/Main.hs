@@ -39,6 +39,7 @@ nim board player difficulty = do
         else do
           -- head is the selected row to remove, and the tail is how many artifacts will be removed
           let rowAndArtifacts = getComputerMove board difficulty
+          putStrLn "\n The computer made his move"
           nim (updateBoard board (head rowAndArtifacts) (last rowAndArtifacts)) (nextTurn player) (difficulty)
 
 
@@ -51,7 +52,7 @@ board = [1, 3, 5, 7]
 printBoard :: [Int] -> IO ()
 printBoard board = do
   boardDivider
-  putStr $ unlines [replicate artifacts '|' | (artifacts, row) <- zip board [1 .. length board]]
+  putStr $ unlines ["[" ++ (show row) ++ "] " ++ replicate artifacts '|' | (artifacts, row) <- zip board [1 .. length board]]
   boardDivider
 
 boardDivider :: IO ()
