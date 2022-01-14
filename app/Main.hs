@@ -1,11 +1,15 @@
 -- Alunos: Lucas Piazzi de Castro (201635003) e Cristiano Nascimento (201635029) 
 
+module Main where
+
+import Lib
 import Data.Char
+--import Control.Monad.Random
 
 nimGame :: IO ()
-nimGame = do 
+nimGame = do
   -- transform IO Int to Int
-  selectedDifficulty <- getdifficulty 
+  selectedDifficulty <- getdifficulty
   let isPlayerGoingFirst = (if selectedDifficulty == 1 then 1 else 0)
   main board isPlayerGoingFirst selectedDifficulty
 
@@ -21,26 +25,26 @@ main board player difficulty =
         putStr "Player: "
         putStr (show (nextTurn player))
         putStrLn " wins!"
-      else do
+    else do
         putStr "Player "
         print player
         print " turn!"
         -- player turn
         if player == 1 then do
-        row <- getPlayerMove "Enter the row number you want to select: "
-        artifacts <- getPlayerMove "Enter the number of artifacts you want to remove: "
-        putStr "Move made!"
-        if checkPlayerMove board row artifacts
-          then main (updateBoard board row artifacts) (nextTurn player) difficulty
+          row <- getPlayerMove "Enter the row number you want to select: "
+          artifacts <- getPlayerMove "Enter the number of artifacts you want to remove: "
+          putStr "Move made!"
+          if checkPlayerMove board row artifacts
+            then main (updateBoard board row artifacts) (nextTurn player) difficulty
           else do
-          putStrLn "Invalid move, insert a valid move!"
-          main board player difficulty
+            putStrLn "Invalid move, insert a valid move!"
+            main board player difficulty
         -- computer turn
         else do
-          -- Head is the selected row to remove, and the tail is how many artifacts will be removed
+          -- ead is the selected row to remove, and the tail is how many artifacts will be removed
           let rowAndArtifacts = getComputerMove board difficulty
-          main (updateBoard board (head rowAndArtifacts) (rowAndArtifacts !! 1)) (nextTurn player) difficulty
-        
+          main (updateBoard board (head rowAndArtifacts) (last rowAndArtifacts)) (nextTurn player) difficulty
+
 
 -- each index represents a line of the board, the value in each
 -- index represents the number of artifacts in the current board.
@@ -72,13 +76,17 @@ getPlayerMove move = do
 -- Get the computer move based on the difficulty selected
 getComputerMove :: [Int] -> Int -> [Int]
 getComputerMove board difficulty = do
-  if difficulty == 1 then makeRandomMove board  else makeOptimalMove board 
+  if difficulty == 1 then makeRandomMove board  else makeRandomMove board
 
  -- Return a random move for the easy mode
-makeRandomMove ::[Int] -> [Int]
+makeRandomMove :: [Int] -> [Int]
+makeRandomMove board = do
+  let randomSelectedRow = randomRIO(0, 3)
+  let randowSelectedArtifacts = randomRIO(1, board!!randomSelectedRow)
+  return [randomSelectedRow, randowSelectedArtifacts]
 
 -- Return optimal move for the hard mode
-makeOptimalMove ::[Int] -> [Int]
+--makeOptimalMove ::[Int] -> [Int]
 
 
 -- Verify whether a plater move is valid or not
