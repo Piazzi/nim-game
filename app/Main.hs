@@ -4,7 +4,7 @@ module Main where
 
 import Lib
 import Data.Char
---import Control.Monad.Random
+import Control.Monad.Random
 
 nimGame :: IO ()
 nimGame = do
