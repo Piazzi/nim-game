@@ -1,18 +1,17 @@
 -- Alunos: Lucas Piazzi de Castro (201635003) e Cristiano Nascimento (201635029) 
 
 module Main where
-
 import Data.Char
 import Control.Monad.Random
 
-nimGame :: IO ()
-nimGame = do
+main :: IO ()
+main = do
     selectedDifficulty <- getDifficulty 
-    main board (if selectedDifficulty == 1 then 1 else 0) selectedDifficulty
+    nim board (if selectedDifficulty == 1 then 1 else 0) selectedDifficulty
 
--- main function of the game
-main :: [Int] -> Int -> Int -> IO ()
-main board player difficulty = do
+-- nim function of the game
+nim :: [Int] -> Int -> Int -> IO ()
+nim board player difficulty = do
     printBoard board
     if gameFinished board
       then do
@@ -28,16 +27,16 @@ main board player difficulty = do
           row <- getPlayerMove "Enter the row number you want to select: "
           artifacts <- getPlayerMove "Enter the number of artifacts you want to remove: "
           putStr "Move made!"
-          if checkPlayerMove board row artifacts
-            then main (updateBoard board row artifacts) (nextTurn player) (difficulty)
+          if checkPlayerMove board row artifacts then 
+            nim (updateBoard board row artifacts) (nextTurn player) (difficulty)
           else do
             putStrLn "Invalid move, insert a valid move!"
-            main board player difficulty
+            nim board player difficulty
         -- computer turn
         else do
           -- head is the selected row to remove, and the tail is how many artifacts will be removed
           let rowAndArtifacts = getComputerMove board difficulty
-          main (updateBoard board (head rowAndArtifacts) (last rowAndArtifacts)) (nextTurn player) (difficulty)
+          nim (updateBoard board (head rowAndArtifacts) (last rowAndArtifacts)) (nextTurn player) (difficulty)
 
 
 -- each index represents a line of the board, the value in each
@@ -84,7 +83,6 @@ makeRandomMove board = do
 
 -- Return optimal move for the hard mode
 --makeOptimalMove ::[Int] -> [Int]
-
 
 -- Verify whether a plater move is valid or not
 checkPlayerMove :: [Int] -> Int -> Int -> Bool
