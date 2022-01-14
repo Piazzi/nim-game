@@ -4,6 +4,7 @@ module Main where
 import Data.Char
 import Control.Monad.Random
 import System.IO.Unsafe
+import Foreign.C.Types
 
 main :: IO ()
 main = do
@@ -22,12 +23,13 @@ nim board player difficulty = do
     else do
         putStr "Player "
         print player
-        print " turn!"
+        putStr " turn! \n"
         -- player turn
         if player == 1 then do
-          row <- getPlayerMove "Enter the row number you want to select: "
+          row <- getPlayerMove "Enter the row number you want to select:  "
+          putStr "\n"
           artifacts <- getPlayerMove "Enter the number of artifacts you want to remove: "
-          putStr "Move made!"
+          putStr "Move made! \n"
           if checkPlayerMove board row artifacts then 
             nim (updateBoard board row artifacts) (nextTurn player) (difficulty)
           else do
@@ -59,16 +61,21 @@ boardDivider = putStrLn "\n ---------- Board ------------ \n "
 updateBoard :: [Int] -> Int -> Int -> [Int] -- returns a updated board
 updateBoard board row rowArtifacts = [if rowIndex == row then artifacts - rowArtifacts else artifacts | (artifacts, rowIndex) <- zip board [1 .. length board]]
 
+-- workaround for the getChar bug
+getHiddenChar = fmap (chr.fromEnum) c_getch
+foreign import ccall unsafe "conio.h getch"
+  c_getch :: IO CInt
+
 -- Get the player move via input
 getPlayerMove :: String -> IO Int
 getPlayerMove move = do
   putStr move
-  playerInput <- getChar
+  playerInput <- getHiddenChar
   if isDigit playerInput
     then return (digitToInt playerInput)
-    else do
-      putStrLn "Invalid input, insert a valid number!"
-      getPlayerMove move
+  else do
+    putStrLn "Invalid input, insert a valid number! \n"
+    getPlayerMove move
 
 -- Get the computer move based on the difficulty selected
 getComputerMove :: [Int] -> Int -> [Int]
