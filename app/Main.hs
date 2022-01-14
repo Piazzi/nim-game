@@ -3,6 +3,7 @@
 module Main where
 import Data.Char
 import Control.Monad.Random
+import System.IO.Unsafe
 
 main :: IO ()
 main = do
@@ -74,16 +75,14 @@ getComputerMove :: [Int] -> Int -> [Int]
 getComputerMove board difficulty = do
   if difficulty == 1 then makeRandomMove board  else makeRandomMove board
 
- -- Return a random move for the easy mode
 makeRandomMove :: [Int] -> [Int]
 makeRandomMove board = do 
-      g <- newStdGen
-      let randomSelectedRow = getRandomR(0, 3) g
-  -- if the row is empty, call the function again
+      let randomSelectedRow = unsafePerformIO (getStdRandom (randomR (0, 3))) :: Int
+      -- if the row is empty, call the function again
       if (board !! randomSelectedRow) == 0 then 
         makeRandomMove board
-      else do
-        let randowSelectedArtifacts = getRandomR(1, board !! randomSelectedRow)
+      else do 
+        let randowSelectedArtifacts = unsafePerformIO (getStdRandom (randomR(1, board !! randomSelectedRow))) :: Int 
         randomSelectedRow : randowSelectedArtifacts : []
 
 -- Return optimal move for the hard mode
