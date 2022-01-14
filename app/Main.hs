@@ -2,25 +2,18 @@
 
 module Main where
 
-import Lib
 import Data.Char
---import Control.Monad.Random
+import Control.Monad.Random
 
 nimGame :: IO ()
 nimGame = do
-    -- transform IO Int to Int
-    selectedDifficulty <- getdifficulty
-    if (selectedDifficulty == 1) then
-          main board 1 selectedDifficulty
-      else
-          main board 0 selectedDifficulty
+    selectedDifficulty <- getDifficulty 
+    main board (if selectedDifficulty == 1 then 1 else 0) selectedDifficulty
 
 -- main function of the game
 main :: [Int] -> Int -> Int -> IO ()
 main board player difficulty = do
-    boardDivider
     printBoard board
-    boardDivider
     if gameFinished board
       then do
         putStr "Player: "
@@ -42,7 +35,7 @@ main board player difficulty = do
             main board player difficulty
         -- computer turn
         else do
-          -- ead is the selected row to remove, and the tail is how many artifacts will be removed
+          -- head is the selected row to remove, and the tail is how many artifacts will be removed
           let rowAndArtifacts = getComputerMove board difficulty
           main (updateBoard board (head rowAndArtifacts) (last rowAndArtifacts)) (nextTurn player) (difficulty)
 
@@ -54,7 +47,10 @@ board = [1, 3, 5, 7]
 
 -- print the current state of the board, number of artifacts in each row
 printBoard :: [Int] -> IO ()
-printBoard board = putStr $ unlines [replicate artifacts '|' | (artifacts, row) <- zip board [1 .. length board]]
+printBoard board = do
+  boardDivider
+  putStr $ unlines [replicate artifacts '|' | (artifacts, row) <- zip board [1 .. length board]]
+  boardDivider
 
 boardDivider :: IO ()
 boardDivider = putStrLn "\n ---------- Board ------------ \n "
@@ -100,22 +96,22 @@ gameFinished :: [Int] -> Bool
 gameFinished = all (== 0)
 
 -- check player difficulty
-getdifficulty :: IO Int
-getdifficulty  = do
+getDifficulty :: IO Int
+getDifficulty  = do
   putStrLn "----- Starting the game -----"
   putStrLn "Select the difficulty: "
   putStrLn "[1] --> Easy Mode"
   putStrLn "[2] --> Hard Mode"
-  playerInput <- getDigit
-  if (playerInput == 0 || playerInput == 1)
+  playerInput <- getChar
+  if isDigit playerInput
     then do
       putStrLn "You selected: "
       print playerInput
       putStrLn "The game is starting, good luck! \n"
-      return playerInput
+      return (digitToInt playerInput)
     else do
-      putStrLn "Invalid difficulty, insert a valid difficulty: \n [1] - For Easy Mode \n [2] - For Hard Mode "
-      getdifficulty
+      putStrLn "Invalid dificulty, insert a valid dificulty: \n [1] - For Easy Mode \n [2] - For Hard Mode "
+      getDifficulty 
 
 -- Get wheter is the player turn or the computer
 -- player = 0 --> computer turn
