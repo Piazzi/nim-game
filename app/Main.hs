@@ -8,15 +8,16 @@ import Data.Char
 
 nimGame :: IO ()
 nimGame = do
-  -- transform IO Int to Int
-  selectedDifficulty <- getdifficulty
-  let isPlayerGoingFirst = (if selectedDifficulty == 1 then 1 else 0)
-  main board isPlayerGoingFirst selectedDifficulty
+    -- transform IO Int to Int
+    selectedDifficulty <- getdifficulty
+    if (selectedDifficulty == 1) then
+          main board 1 selectedDifficulty
+      else
+          main board 0 selectedDifficulty
 
 -- main function of the game
 main :: [Int] -> Int -> Int -> IO ()
-main board player difficulty =
-  do
+main board player difficulty = do
     boardDivider
     printBoard board
     boardDivider
@@ -35,7 +36,7 @@ main board player difficulty =
           artifacts <- getPlayerMove "Enter the number of artifacts you want to remove: "
           putStr "Move made!"
           if checkPlayerMove board row artifacts
-            then main (updateBoard board row artifacts) (nextTurn player) difficulty
+            then main (updateBoard board row artifacts) (nextTurn player) (difficulty)
           else do
             putStrLn "Invalid move, insert a valid move!"
             main board player difficulty
@@ -43,7 +44,7 @@ main board player difficulty =
         else do
           -- ead is the selected row to remove, and the tail is how many artifacts will be removed
           let rowAndArtifacts = getComputerMove board difficulty
-          main (updateBoard board (head rowAndArtifacts) (last rowAndArtifacts)) (nextTurn player) difficulty
+          main (updateBoard board (head rowAndArtifacts) (last rowAndArtifacts)) (nextTurn player) (difficulty)
 
 
 -- each index represents a line of the board, the value in each
@@ -105,13 +106,13 @@ getdifficulty  = do
   putStrLn "Select the difficulty: "
   putStrLn "[1] --> Easy Mode"
   putStrLn "[2] --> Hard Mode"
-  playerInput <- getChar
-  if isDigit playerInput
+  playerInput <- getDigit
+  if (playerInput == 0 || playerInput == 1)
     then do
       putStrLn "You selected: "
       print playerInput
       putStrLn "The game is starting, good luck! \n"
-      return (digitToInt playerInput)
+      return playerInput
     else do
       putStrLn "Invalid difficulty, insert a valid difficulty: \n [1] - For Easy Mode \n [2] - For Hard Mode "
       getdifficulty
