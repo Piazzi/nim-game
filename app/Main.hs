@@ -55,7 +55,7 @@ board = [1, 3, 5, 7]
 printBoard :: [Int] -> IO ()
 printBoard board = do
   boardDivider
-  putStr $ unlines ["[" ++ (show artifacts) ++ "] " ++ replicate artifacts '|' | (artifacts, row) <- zip board [1 .. length board]]
+  putStr $ unlines ["[" ++ (show row) ++ "] " ++ replicate artifacts '|' | (artifacts, row) <- zip board [1 .. length board]]
   boardDivider
 
 boardDivider :: IO ()
