@@ -33,15 +33,18 @@ nim board player difficulty = do
           if checkPlayerMove board row artifacts then 
             nim (updateBoard board row artifacts) (nextTurn player) (difficulty)
           else do
-            putStrLn "Invalid move, insert a valid move!"
+            putStrLn "\n Invalid move, insert a valid move!"
             nim board player difficulty
         -- computer turn
         else do
           -- head is the selected row to remove, and the tail is how many artifacts will be removed
           let rowAndArtifacts = getComputerMove board difficulty
-          putStrLn "\n The computer made his move"
+          putStrLn "\n The computer made his move the following move: "
+          putStr "Selected Row: "
+          print (head rowAndArtifacts)
+          putStr "Selected Artifacts: "
+          print (last rowAndArtifacts)
           nim (updateBoard board (head rowAndArtifacts) (last rowAndArtifacts)) (nextTurn player) (difficulty)
-
 
 -- each index represents a line of the board, the value in each
 -- index represents the number of artifacts in the current board.
@@ -52,7 +55,7 @@ board = [1, 3, 5, 7]
 printBoard :: [Int] -> IO ()
 printBoard board = do
   boardDivider
-  putStr $ unlines ["[" ++ (show row) ++ "] " ++ replicate artifacts '|' | (artifacts, row) <- zip board [1 .. length board]]
+  putStr $ unlines ["[" ++ (show artifacts) ++ "] " ++ replicate artifacts '|' | (artifacts, row) <- zip board [1 .. length board]]
   boardDivider
 
 boardDivider :: IO ()
@@ -83,20 +86,7 @@ getComputerMove :: [Int] -> Int -> [Int]
 getComputerMove board difficulty = do
   if difficulty == 1 then makeRandomMove board  else makeRandomMove board
 
-makeRandomMove :: [Int] -> [Int]
-makeRandomMove board = do 
-      let randomSelectedRow = unsafePerformIO (getStdRandom (randomR (0, 3))) :: Int
-      -- if the row is empty, call the function again
-      if (board !! randomSelectedRow) == 0 then 
-        makeRandomMove board
-      else do 
-        let randowSelectedArtifacts = unsafePerformIO (getStdRandom (randomR(1, board !! randomSelectedRow))) :: Int 
-        randomSelectedRow : randowSelectedArtifacts : []
-
--- Return optimal move for the hard mode
---makeOptimalMove ::[Int] -> [Int]
-
--- Verify whether a plater move is valid or not
+-- Verify whether a player move is valid or not
 checkPlayerMove :: [Int] -> Int -> Int -> Bool
 checkPlayerMove board row artifacts = board !! (row - 1) >= artifacts
 
@@ -104,7 +94,7 @@ checkPlayerMove board row artifacts = board !! (row - 1) >= artifacts
 -- meaning that every artifact were removed.
 gameFinished :: [Int] -> Bool
 gameFinished board = 
-   if all (== 0) board then True else False
+   if all (<= 0) board then True else False
 
 -- check player difficulty
 getDifficulty :: IO Int
@@ -130,3 +120,64 @@ getDifficulty  = do
 nextTurn :: Int -> Int
 nextTurn player = if player == 0 then 1 else 0
 
+makeRandomMove :: [Int] -> [Int]
+makeRandomMove board = do 
+      let randomSelectedRow = unsafePerformIO (getStdRandom (randomR (0, 3))) :: Int
+      let totalArtifactsInTheRow =  board !! randomSelectedRow
+      -- if the row is empty, call the function again
+      if (totalArtifactsInTheRow <= 0) then
+         makeRandomMove board
+      else do 
+        let randowSelectedArtifacts = unsafePerformIO (getStdRandom (randomR(1, totalArtifactsInTheRow))) :: Int 
+        if(randowSelectedArtifacts >= totalArtifactsInTheRow) then
+            makeRandomMove board
+        else do
+        [randomSelectedRow, randowSelectedArtifacts]
+ 
+-- Return optimal move for the hard mode
+makeOptimalMove ::[Int] -> [Int]
+makeOptimalMove board = makeOptimalMoveAux board 0 (head board)
+
+makeOptimalMoveAux :: [Int] -> Int -> Int -> [Int]
+makeOptimalMoveAux board row artifactsToRemove = 
+    -- make the random move if necessary
+    if ((row == (length board)) && (artifactsToRemove == 0)) then do
+        (makeRandomMove board) -- easy move
+    else if (artifactsToRemove == 0) then
+        makeOptimalMoveAux board (row + 1) (board !! row)
+    else if (isEvenList (sumBinaryNumbers (removeArtifactsFromRow board row artifactsToRemove))) then do
+        return [] (row, artifactsToRemove) 
+    else
+        makeOptimalMoveAux board row (artifactsToRemove - 1)
+
+-- Removes artifacts from a given row
+removeArtifactsFromRow :: [Int] -> Int -> Int -> [Int]
+removeArtifactsFromRow board chosenRow removedArtifacts = 
+    [if row == chosenRow then artifacts - removedArtifacts else artifacts | (artifacts, row) <- zip board [1..length board]]
+
+-- Returns a list that contains the sum of the numbers in binary
+sumBinaryNumbers :: [Int] -> [Int]
+sumBinaryNumbers [] = []
+sumBinaryNumbers (x : xs) = sumBinaryRows (concat [take (3 - (length (intToBin x))) (repeat 0), (intToBin x)]) (sumBinaryNumbers xs)
+
+-- Returns a list which each index is the sum of the binary numbers in each row
+sumBinaryRows :: [Int] -> [Int] -> [Int]
+sumBinaryRows [] [] = []
+sumBinaryRows (x:xs) [] = (x:xs)
+sumBinaryRows [] (x:xs) = (x:xs)
+sumBinaryRows (x:xs) (y:ys) = x + y : sumBinaryRows xs ys
+
+-- Convert a int to binary
+intToBin :: Int -> [Int]
+intToBin 0 = [0]
+intToBin n = reverse (toBinHelper n)
+
+-- Helper function to convert a number to binary
+toBinHelper :: Int -> [Int]
+toBinHelper 0 = []
+toBinHelper n = let (q,r) = n `divMod` 2 in r : toBinHelper q
+
+-- Checks if all the elements in a list are even
+isEvenList :: [Int] -> Bool
+isEvenList [] = True
+isEvenList (x:xs) =  if ((x `mod` 2) /= 0) then False else True
